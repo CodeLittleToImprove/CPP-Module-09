@@ -12,3 +12,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(CPP_09_ex00
         ex00/BitcoinExchange.cpp
         ex00/main.cpp)
+
+add_executable(test
+        test.cpp)
