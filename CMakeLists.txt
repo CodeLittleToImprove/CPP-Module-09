@@ -13,5 +13,9 @@ add_executable(CPP_09_ex00
         ex00/BitcoinExchange.cpp
         ex00/main.cpp)
 
+add_executable(CPP_09_ex01
+        ex01/RPN.cpp
+        ex01/main.cpp)
+
 add_executable(test
         test.cpp)
