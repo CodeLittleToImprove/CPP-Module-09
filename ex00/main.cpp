@@ -17,13 +17,17 @@ int main(int argc, char *argv[])
 {
 	if (argc != 2)
 	{
+		std::cout << "Error: could not open file." << std::endl;
 		std::cerr << "Usage: ./btc <filename>" << std::endl;
-		return (-1);
+		return (1);
 	}
+
+	std::string inputFile = argv[1];
 	try
 	{
 		BitcoinExchange exchange;
-		exchange.run(argv[1]);
+		exchange.loadDatabase();
+		exchange.processInputFile(inputFile);
 	}
 	catch (const std::exception &e)
 	{

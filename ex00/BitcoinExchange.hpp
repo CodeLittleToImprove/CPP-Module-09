@@ -8,6 +8,7 @@
 # include <string>
 
 #define DATA_BASE_FILE_NAME "data.csv"
+
 class BitcoinExchange
 {
 	private:
@@ -23,17 +24,13 @@ class BitcoinExchange
 
 	private:
 		void	parseDatabaseLine(const std::string& line);
-		void	processLine(const std::string& line);
+		void	processUserLine(const std::string& line);
 
-		// bool	isValidDate(const std::string &date_str);
-		// bool	isLeapYear(int year) const;
-		// bool	isValidValue(const std::string& value) const;
-		// bool	isNumber(const std::string& value) const;
 
+		std::string trim(const std::string& str) const;
 		std::string findClosestLowerData(const std::string& date) const;
 		double	getExchangeRate(const std::string& date) const;
 
-		void	printError(const std::string& message) const;
 
 	class OpenFileError : public std::exception
 	{
@@ -75,6 +72,14 @@ class BitcoinExchange
 		virtual const char* what() const throw()
 		{
 			return ("Invalid line error. Something is wrong with the price");
+		}
+	};
+	class DateTooEarlyError : public std::exception
+	{
+	public:
+		virtual const char* what() const throw()
+		{
+			return "Date too early";
 		}
 	};
 };
