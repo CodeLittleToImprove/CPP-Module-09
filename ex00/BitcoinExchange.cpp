@@ -29,63 +29,41 @@ BitcoinExchange::~BitcoinExchange(void)
 	// std::cout << "Destructor called" << std::endl;
 }
 
-bool	isValidDate(const std::string& date_str)
+bool	BitcoinExchange::isValidDate(const std::string& date_str)
 {
 	//YYYY-MM-DD
 	//Check length (4 + 1 + 2 + 1 + 2 = 10)
 
 	if (date_str.length() != 10)
-	{
-		// std::cout << "error1: "<< date_str << std::endl;
 		return (false);
-	}
 
 	//Check hyphen placement
 	if (date_str[4] != '-' || date_str[7] != '-')
-	{
-		// std::cout << "error2: "<< date_str << std::endl;
 		return (false);
-	}
+
 	int year, month, day;
 	char hyph1, hyph2;
 
 	std::istringstream iss(date_str);
 	if (!(iss >> year >> hyph1 >> month >> hyph2 >> day))
-	{
-		// std::cout << "error3: "<< date_str << std::endl;
 		return (false);
-	}
 
 	std::string junk;
 	if (iss >> junk)
-	{
-		// std::cout << "error4: "<< date_str << std::endl;
 		return (false);
-	}
 
-	int daysInMonth[] =
-	{
-		31, 28, 31, 30, 31, 30,
-		31, 31, 30, 31, 30, 31
-	};
+	int daysInMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-	bool isLeap = (year % 4 == 0 && year % 100 != 0) ||
-		(year % 400 == 0);
+	bool isLeap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 
 	if (isLeap && month == 2)
 		daysInMonth[1] = 29;
 
 	if (month < 1 || month > 12)
-	{
-		// std::cout << "error5: "<< date_str << std::endl;
 		return (false);
-	}
 
 	if (day < 1 || day > daysInMonth[month - 1])
-	{
-		// std::cout << "error6: "<< date_str << std::endl;
 		return (false);
-	}
 
 	return (true);
 }
@@ -138,7 +116,7 @@ void	BitcoinExchange::loadDatabase()
 	file.close();
 }
 
-std::string BitcoinExchange::trim(const std::string& str) const
+std::string BitcoinExchange::trim(const std::string& str)
 {
 	const std::string whitespace = " \n\r\t";
 
@@ -152,19 +130,16 @@ std::string BitcoinExchange::trim(const std::string& str) const
 
 double BitcoinExchange::getExchangeRate(const std::string& date) const
 {
-	std::map<std::string, double>::const_iterator it = _rates.begin();
-	std::map<std::string, double>::const_iterator last = _rates.begin();
+	// upper_bound returns the first element STRICTLY GREATER than date
+	std::map<std::string, double>::const_iterator it = _rates.upper_bound(date);
 
-	for (; it != _rates.end(); ++it)
-	{
-		if (it->first > date) //Passed the input date
-			break;
-		last = it; // largest date <= input
-	}
-	if (last->first > date)
+	// If it's at the beginning, even the first date in DB is newer than input
+	if (it == _rates.begin())
 		throw DateTooEarlyError();
 
-	return last->second;
+	// Move back one step to get the date <= input
+	--it;
+	return it->second;
 }
 
 void	BitcoinExchange::processUserLine(const std::string& line)
@@ -184,14 +159,13 @@ void	BitcoinExchange::processUserLine(const std::string& line)
 		std::cout << "Error: date.empty | => " << line << std::endl;
 		return;
 	}
-	// Validate date
+
 	if (!isValidDate(date))
 	{
 		std::cout << "Error: bad date input => " << date << std::endl;
 		return;
 	}
 
-	// Parse value
 	double value;
 	std::istringstream iss(valueStr);
 	if (!(iss >> value))
@@ -232,7 +206,6 @@ void	BitcoinExchange::processUserLine(const std::string& line)
 		std::cout << "Error: " << e.what() << std::endl;
 		return;
 	}
-
 	std::cout << date << " => " << value << " = " << (value * rate) << std::endl;
 }
 
@@ -252,7 +225,6 @@ void	BitcoinExchange::processInputFile(const std::string& filename)
 		return;
 	}
 
-	// line.erase(line.find_last_not_of(" \t\r\n") + 1);
 	if (line != "date | value")
 	{
 		std::cout << "Error: bad input => " << line << std::endl;

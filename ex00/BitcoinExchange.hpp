@@ -13,6 +13,13 @@ class BitcoinExchange
 {
 	private:
 		std::map<std::string, double> _rates;
+
+		static std::string trim(const std::string& str);
+		static bool isValidDate(const std::string& date_str);
+
+		void	parseDatabaseLine(const std::string& line);
+		void	processUserLine(const std::string& line);
+		double	getExchangeRate(const std::string& date) const;
 	public:
 		BitcoinExchange();
 		BitcoinExchange(const BitcoinExchange &other);
@@ -21,65 +28,22 @@ class BitcoinExchange
 
 		void	loadDatabase();
 		void	processInputFile(const std::string& filename);
-
-	private:
-		void	parseDatabaseLine(const std::string& line);
-		void	processUserLine(const std::string& line);
-
-
-		std::string trim(const std::string& str) const;
-		std::string findClosestLowerData(const std::string& date) const;
-		double	getExchangeRate(const std::string& date) const;
-
-
-	class OpenFileError : public std::exception
-	{
-	public:
-		virtual const char* what() const throw()
-		{
-			return ("File could not be opened");
-		}
+	class OpenFileError : public std::exception {
+		virtual const char* what() const throw() { return "Error: could not open file."; }
 	};
-
-	class ColumnInvalidError : public std::exception
-	{
-	public:
-		virtual const char* what() const throw()
-		{
-			return ("Invalid column error. Should be 'date,exchange_rate'.");
-		}
+	class ColumnInvalidError : public std::exception {
+		virtual const char* what() const throw() { return "Error: invalid database header."; }
 	};
-
-	class InvalidLineError : public std::exception
-	{
-	public:
-		virtual const char* what() const throw()
-		{
-			return ("Invalid line error. A token is missing");
-		}
+	class InvalidLineError : public std::exception {
+		virtual const char* what() const throw() { return "Error: database line format invalid."; }
 	};
-	class InvalidDateError : public std::exception
-	{
-	public:
-		virtual const char* what() const throw()
-		{
-			return ("Invalid Date error. Something is wrong with the date");
-		}
+	class InvalidDateError : public std::exception {
+		virtual const char* what() const throw() { return "Error: invalid date format."; }
 	};
-	class InvalidPriceError : public std::exception
-	{
-	public:
-		virtual const char* what() const throw()
-		{
-			return ("Invalid line error. Something is wrong with the price");
-		}
+	class InvalidPriceError : public std::exception {
+		virtual const char* what() const throw() { return "Error: invalid price in database."; }
 	};
-	class DateTooEarlyError : public std::exception
-	{
-	public:
-		virtual const char* what() const throw()
-		{
-			return "Date too early";
-		}
+	class DateTooEarlyError : public std::exception {
+		virtual const char* what() const throw() { return "Date too early"; }
 	};
 };
