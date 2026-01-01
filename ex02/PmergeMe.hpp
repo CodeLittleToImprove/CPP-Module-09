@@ -1,0 +1,65 @@
+#pragma once
+
+# include <iostream>
+# include <vector>
+# include <deque>
+
+struct Pair
+{
+	int small;
+	int large;
+
+	Pair(int a, int b)
+	{
+		if (a < b)
+		{
+			small = a;
+			large = b;
+		}
+		else
+		{
+			small = b;
+			large = a;
+		}
+	}
+};
+
+class PmergeMe
+{
+	private:
+		std::vector<int> _vec;
+		std::deque<int> _deq;
+		void parseInput(char *argv[]);
+		int jacobsthal(int n);
+		std::vector<int> fordJohnsonVector(const std::vector<int> &input);
+		std::deque<int> fordJohnsonDeque(const std::vector<int> &input);
+		template <typename T>
+		void printSequence(const T& seq) const
+		{
+			for (size_t i = 0; i < seq.size(); i++)
+				std::cout << seq[i] << " ";
+			std::cout << std::endl;
+		}
+		template <typename T>
+		void printShortSequence(const T& seq) const
+		{
+			size_t size = seq.size();
+			if (size <= 10)
+			{
+				printSequence(seq);
+				return;
+			}
+			for (size_t i = 0; i < size; i++)
+				std::cout << seq[i] << " ";
+			std::cout << "[...]" << seq[size -1] << std::endl;
+		}
+	public:
+		PmergeMe();
+		PmergeMe(char *argv[]);
+		PmergeMe(const PmergeMe &other);
+		PmergeMe& operator=(const PmergeMe &other);
+		~PmergeMe();
+
+		void run();
+};
+
