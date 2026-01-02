@@ -77,7 +77,11 @@ std::vector<int> PmergeMe::fordJohnsonVector(const std::vector<int> &input)
 	if (input.size() <= 1)
 		return input;
 
-	// create pairs
+	// 1. Create pairs
+	// 2. Sort inside each pair
+	int odd_element = -1;
+	if (input.size() % 2 != 0)
+		odd_element = input.back();
 	std::vector<Pair> temp;
 	size_t start = 0;
 
@@ -86,6 +90,66 @@ std::vector<int> PmergeMe::fordJohnsonVector(const std::vector<int> &input)
 		temp.push_back(Pair(input[start], input[start + 1]));
 		start += 2;
 	}
+	// 3. Extract the leaders (the aᵢ elements)
+	std::vector<int> A;
+	for (std::vector<Pair>::iterator it = temp.begin(); it != temp.end(); ++it)
+	{
+		A.push_back(it->large);
+	}
+	// 4. Recursively sort the leaders (aᵢ)
+	A = fordJohnsonVector(A);
+
+	// 4.5 Extract the losers
+	std::vector<int> B;
+	for (std::vector<Pair>::iterator it = temp.begin(); it != temp.end(); ++it)
+	{
+		B.push_back(it->small);
+	}
+	// 5. Build main
+	std::vector<int> main;
+	main.reserve(input.size());
+	main.push_back(B[0]);
+	main.push_back(A[0]);
+	if (A.size() > 1)
+	{
+		for (std::vector<int>::iterator it = A.begin() + 1; it != A.end(); ++it)
+		{
+			main.push_back(*it);
+		}
+	}
+	// 5.5 Build pend
+	std::vector<int> pend;
+	pend.reserve(input.size());
+	if (B.size() > 1)
+	{
+		for (std::vector<int>::iterator it = B.begin() + 1; it != B.end(); ++it)
+		{
+			pend.push_back(*it);
+		}
+	}
+	if (odd_element != -1)
+		pend.push_back(odd_element);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// 6. Insert pend elements into main
+	// 7. Insert the odd element (if any)
 }
 
 void PmergeMe::run()
