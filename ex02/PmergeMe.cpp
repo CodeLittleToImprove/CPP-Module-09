@@ -2,6 +2,7 @@
 #include "PmergeMe.hpp"
 
 #include <cstdlib>
+#include <limits>
 
 // Default constructor
 PmergeMe::PmergeMe()
@@ -72,16 +73,36 @@ int PmergeMe::jacobsthal(int n)
 	return b;
 }
 
+void PmergeMe::binaryInsert(std::vector<int> &arr, int value)
+{
+	if (arr.empty())
+	{
+		arr.push_back(value);
+		return;
+	}
+	int left = 0;
+	int right = arr.size() - 1;
+	while (left <= right)
+	{
+		int middle = (left + right) / 2;
+		if (value <= arr[middle])
+			right = middle - 1 ;
+		else if (value > arr[middle])
+			left = middle + 1;
+	}
+	arr.insert(arr.begin() + left , value);
+}
+
 std::vector<int> PmergeMe::fordJohnsonVector(const std::vector<int> &input)
 {
 	if (input.size() <= 1)
 		return input;
 
-	// 1. Create pairs
-	// 2. Sort inside each pair
+	// 1. Create pairs && 2. Sort inside each pair
 	int odd_element = -1;
 	if (input.size() % 2 != 0)
 		odd_element = input.back();
+
 	std::vector<Pair> temp;
 	size_t start = 0;
 
@@ -90,21 +111,24 @@ std::vector<int> PmergeMe::fordJohnsonVector(const std::vector<int> &input)
 		temp.push_back(Pair(input[start], input[start + 1]));
 		start += 2;
 	}
+
 	// 3. Extract the leaders (the aᵢ elements)
 	std::vector<int> A;
 	for (std::vector<Pair>::iterator it = temp.begin(); it != temp.end(); ++it)
 	{
 		A.push_back(it->large);
 	}
+
 	// 4. Recursively sort the leaders (aᵢ)
 	A = fordJohnsonVector(A);
 
-	// 4.5 Extract the losers
+	// 4.5 Extract the losers (bᵢ)
 	std::vector<int> B;
 	for (std::vector<Pair>::iterator it = temp.begin(); it != temp.end(); ++it)
 	{
 		B.push_back(it->small);
 	}
+
 	// 5. Build main
 	std::vector<int> main;
 	main.reserve(input.size());
@@ -130,26 +154,38 @@ std::vector<int> PmergeMe::fordJohnsonVector(const std::vector<int> &input)
 	if (odd_element != -1)
 		pend.push_back(odd_element);
 
+	// 6. Insert pend elements into main using Jacobsthal boundaries
+	std::vector<int> boundaries;
+	int previous = 0;
+	int current = 0;
+	for (int i = 1; ; ++i)
+	{
+		int J = jacobsthal(i);
+		current = J;
+		if (J >= pend.size())
+		{
+			boundaries.push_back(pend.size()); // end boundary
+			break;
+		}
+		if (previous == current)
+			continue;
+		boundaries.push_back(J);
+		previous = J;
+	}
+	// 6.2 Convert boundaries to ranges and binary-insert
+	previous = 0;
+	for (std::vector<int>::iterator b_it = boundaries.begin(); b_it != boundaries.end(); ++b_it) // declares how many pends are allowed to inserted in one loop
+	{
+		int boundary = *b_it;
+		for (int i = boundary; i > previous; --i) // reverse order
+		{
+			int value = pend[i - 1];
+			binaryInsert(main, value);
+		}
+		previous = boundary;
+	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// 6. Insert pend elements into main
-	// 7. Insert the odd element (if any)
+	return main;
 }
 
 void PmergeMe::run()
@@ -163,5 +199,5 @@ void PmergeMe::run()
 
 	std::cout << "After:  ";
 	// printShortSequence(_vec);
-	printSequence(_deq);
+	printSequence(sortedVec);
 }

@@ -30,6 +30,7 @@ class PmergeMe
 		std::vector<int> _vec;
 		std::deque<int> _deq;
 		void parseInput(char *argv[]);
+		void binaryInsert(std::vector<int>& arr, int value);
 		int jacobsthal(int n);
 		std::vector<int> fordJohnsonVector(const std::vector<int> &input);
 		std::deque<int> fordJohnsonDeque(const std::vector<int> &input);
