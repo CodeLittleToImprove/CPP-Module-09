@@ -3,6 +3,9 @@
 # include <iostream>
 # include <vector>
 # include <deque>
+# include <ctime>
+# include <iomanip> // for setprecision
+# include <sstream>
 
 struct Pair
 {
@@ -30,10 +33,12 @@ class PmergeMe
 		std::vector<int> _vec;
 		std::deque<int> _deq;
 		void parseInput(char *argv[]);
+		void handleSmallInput() const;
 		void binaryInsert(std::vector<int>& arr, int value);
+		void binaryInsert(std::deque<int>& arr, int value);
 		int jacobsthal(int n);
 		std::vector<int> fordJohnsonVector(const std::vector<int> &input);
-		std::deque<int> fordJohnsonDeque(const std::vector<int> &input);
+		std::deque<int> fordJohnsonDeque(const std::deque<int> &input);
 		template <typename T>
 		void printSequence(const T& seq) const
 		{
@@ -45,14 +50,14 @@ class PmergeMe
 		void printShortSequence(const T& seq) const
 		{
 			size_t size = seq.size();
-			if (size <= 10)
+			if (size < 5)
 			{
 				printSequence(seq);
 				return;
 			}
-			for (size_t i = 0; i < size; i++)
+			for (size_t i = 0; i < 4; i++)
 				std::cout << seq[i] << " ";
-			std::cout << "[...]" << seq[size -1] << std::endl;
+			std::cout << "[...] " << seq[size -1] << std::endl;
 		}
 	public:
 		PmergeMe();
