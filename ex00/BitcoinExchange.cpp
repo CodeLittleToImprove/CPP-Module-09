@@ -123,10 +123,9 @@ std::string BitcoinExchange::trim(const std::string& str)
 
 double BitcoinExchange::getExchangeRate(const std::string& date) const
 {
-	// upper_bound returns the first element STRICTLY GREATER than date
 	std::map<std::string, double>::const_iterator it = _rates.upper_bound(date);
 
-	// If it's at the beginning, even the first date in DB is newer than input
+	// when the earlies date is still to early
 	if (it == _rates.begin())
 		throw DateTooEarlyError();
 
