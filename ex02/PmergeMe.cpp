@@ -88,7 +88,7 @@ int PmergeMe::jacobsthal(int n)
 	int b = 1; // same as J(n-1)
 	for (int i = 2; i <= n; ++i)
 	{
-		int c = b + 2 * a; //J(n) = J(n-1) + J(n-2)
+		int c = b + 2 * a; //J(n) = J(n-1) + 2 * J(n-2)
 		a = b; //shift J(n-2) forward
 		b = c; //shift J(n-1) forward
 	}
