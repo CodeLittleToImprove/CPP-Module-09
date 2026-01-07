@@ -59,6 +59,15 @@ class PmergeMe
 				std::cout << seq[i] << " ";
 			std::cout << "[...] " << seq[size -1] << std::endl;
 		}
+		template <typename T>
+		void printStep(const std::string &label, const T &c)
+		{
+			std::cout << label << ": ";
+			for (typename T::const_iterator it = c.begin(); it != c.end(); ++it)
+				std::cout << *it << " ";
+			std::cout << std::endl;
+		}
+
 	public:
 		PmergeMe();
 		PmergeMe(char *argv[]);
@@ -67,5 +76,11 @@ class PmergeMe
 		~PmergeMe();
 
 		void run();
+
 };
 
+inline std::ostream& operator<<(std::ostream& os, const Pair& p)
+{
+	os << "(" << p.small << "," << p.large << ")";
+	return os;
+}

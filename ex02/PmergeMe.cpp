@@ -120,90 +120,73 @@ std::deque<int> PmergeMe::fordJohnsonDeque(const std::deque<int> &input)
 	if (input.size() <= 1)
 		return input;
 
-	// 1. Create pairs && 2. Sort inside each pair
-	int odd_element = -1;
-	if (input.size() % 2 != 0)
-		odd_element = input.back();
+	// 1. Create ordered pairs
+	std::deque<Pair> pairs;
 
-	std::deque<Pair> temp;
-	size_t start = 0;
+	size_t i = 0;
+	for (; i + 1 < input.size(); i += 2)
+		pairs.push_back(Pair(input[i], input[i + 1]));
 
-	while (start < input.size() && start + 1 < input.size())
+	// 1.5 handle odd element
+	int odd = -1;
+	if (i < input.size())
+		odd = input[i];
+
+	// 2. Recursively sort pairs by their large element
+	std::deque<int> leaders;
+	for (size_t k = 0; k < pairs.size(); ++k)
+		leaders.push_back(pairs[k].large);
+
+	leaders = fordJohnsonDeque(leaders);
+
+	// 3. Find each leader's original pair and move it to sortedPairs
+	std::deque<Pair> sortedPairs;
+	for (size_t l = 0; l < leaders.size(); ++l)
 	{
-		temp.push_back(Pair(input[start], input[start + 1]));
-		start += 2;
+		for (size_t p = 0; p < pairs.size(); ++p)
+		{
+			if (pairs[p].large == leaders[l])
+			{
+				sortedPairs.push_back(pairs[p]);
+				pairs.erase(pairs.begin() + p);
+				break;
+			}
+		}
 	}
 
-	// 3. Extract the leaders (the aᵢ elements)
-	std::deque<int> A;
-	for (std::deque<Pair>::iterator it = temp.begin(); it != temp.end(); ++it)
-	{
-		A.push_back(it->large);
-	}
-
-	// 4. Recursively sort the leaders (aᵢ)
-	A = fordJohnsonDeque(A);
-
-	// 4.5 Extract the losers (bᵢ)
-	std::deque<int> B;
-	for (std::deque<Pair>::iterator it = temp.begin(); it != temp.end(); ++it)
-	{
-		B.push_back(it->small);
-	}
-
-	// 5. Build main
+	// 4. Build MAIN and PEND
 	std::deque<int> main;
-	main.push_back(B[0]);
-	main.push_back(A[0]);
-	if (A.size() > 1)
-	{
-		for (std::deque<int>::iterator it = A.begin() + 1; it != A.end(); ++it)
-		{
-			main.push_back(*it);
-		}
-	}
-	// 5.5 Build pend
 	std::deque<int> pend;
-	if (B.size() > 1)
-	{
-		for (std::deque<int>::iterator it = B.begin() + 1; it != B.end(); ++it)
-		{
-			pend.push_back(*it);
-		}
-	}
-	if (odd_element != -1)
-		pend.push_back(odd_element);
 
-	// 6. Insert pend elements into main using Jacobsthal boundaries
-	std::deque<int> boundaries;
-	int previous = 0;
-	int current = 0;
-	for (int i = 1; ; ++i)
+	main.push_back(sortedPairs[0].small);
+	main.push_back(sortedPairs[0].large);
+
+	for (size_t k = 1; k < sortedPairs.size(); ++k)
 	{
-		size_t J = jacobsthal(i);
-		current = J;
-		if (J >= pend.size())
-		{
-			boundaries.push_back(pend.size()); // end boundary
+		main.push_back(sortedPairs[k].large);
+		pend.push_back(sortedPairs[k].small);
+	}
+
+	// 5. Jacobsthal insertion
+	size_t prev = 0;
+	for (int j = 1; ; ++j)
+	{
+		size_t bound = jacobsthal(j);
+		if (bound >= pend.size())
+			bound = pend.size();
+
+		for (size_t x = bound; x-- > prev;)
+			binaryInsert(main, pend[x]);
+
+		if (bound == pend.size())
 			break;
-		}
-		if (previous == current)
-			continue;
-		boundaries.push_back(J);
-		previous = J;
+
+		prev = bound;
 	}
-	// 6.2 Convert boundaries to ranges and binary-insert
-	previous = 0;
-	for (std::deque<int>::iterator b_it = boundaries.begin(); b_it != boundaries.end(); ++b_it) // declares how many pends are allowed to inserted in one loop
-	{
-		int boundary = *b_it;
-		for (int i = boundary; i > previous; --i) // reverse order
-		{
-			int value = pend[i - 1];
-			binaryInsert(main, value);
-		}
-		previous = boundary;
-	}
+
+	// 6. Insert odd element
+	if (odd != -1)
+		binaryInsert(main, odd);
 
 	return main;
 }
@@ -233,92 +216,72 @@ std::vector<int> PmergeMe::fordJohnsonVector(const std::vector<int> &input)
 	if (input.size() <= 1)
 		return input;
 
-	// 1. Create pairs && 2. Sort inside each pair
-	int odd_element = -1;
-	if (input.size() % 2 != 0)
-		odd_element = input.back();
+	// 1. Create ordered pairs
+	std::vector<Pair> pairs;
+	pairs.reserve(input.size() / 2);
 
-	std::vector<Pair> temp;
-	size_t start = 0;
+	size_t i = 0;
+	for (; i + 1 < input.size(); i += 2)
+		pairs.push_back(Pair(input[i], input[i + 1]));
 
-	while (start < input.size() && start + 1 < input.size())
+	// 1.5 handle odd element
+	int odd = -1;
+	if (i < input.size())
+		odd = input[i];
+
+	// 2. Recursively sort pairs by their large element
+	std::vector<int> leaders;
+	for (size_t k = 0; k < pairs.size(); ++k)
+		leaders.push_back(pairs[k].large);
+
+	leaders = fordJohnsonVector(leaders);
+
+	// 3. Find each leader's original pair and move it to sortedPairs to preserve the small-large relationship
+	std::vector<Pair> sortedPairs;
+	for (size_t l = 0; l < leaders.size(); ++l)
 	{
-		temp.push_back(Pair(input[start], input[start + 1]));
-		start += 2;
+		for (size_t p = 0; p < pairs.size(); ++p)
+		{
+			if (pairs[p].large == leaders[l])
+			{
+				sortedPairs.push_back(pairs[p]);
+				pairs.erase(pairs.begin() + p);
+				break;
+			}
+		}
 	}
-
-	// 3. Extract the leaders (the aᵢ elements)
-	std::vector<int> A;
-	for (std::vector<Pair>::iterator it = temp.begin(); it != temp.end(); ++it)
-	{
-		A.push_back(it->large);
-	}
-
-	// 4. Recursively sort the leaders (aᵢ)
-	A = fordJohnsonVector(A);
-
-	// 4.5 Extract the losers (bᵢ)
-	std::vector<int> B;
-	for (std::vector<Pair>::iterator it = temp.begin(); it != temp.end(); ++it)
-	{
-		B.push_back(it->small);
-	}
-
-	// 5. Build main
+	// 4. Build MAIN and PEND
 	std::vector<int> main;
-	main.reserve(input.size());
-	main.push_back(B[0]);
-	main.push_back(A[0]);
-	if (A.size() > 1)
-	{
-		for (std::vector<int>::iterator it = A.begin() + 1; it != A.end(); ++it)
-		{
-			main.push_back(*it);
-		}
-	}
-	// 5.5 Build pend
 	std::vector<int> pend;
-	pend.reserve(input.size());
-	if (B.size() > 1)
-	{
-		for (std::vector<int>::iterator it = B.begin() + 1; it != B.end(); ++it)
-		{
-			pend.push_back(*it);
-		}
-	}
-	if (odd_element != -1)
-		pend.push_back(odd_element);
 
-	// 6. Insert pend elements into main using Jacobsthal boundaries
-	std::vector<int> boundaries;
-	int previous = 0;
-	int current = 0;
-	for (int i = 1; ; ++i)
+	main.push_back(sortedPairs[0].small);
+	main.push_back(sortedPairs[0].large);
+	for (size_t k = 1; k < sortedPairs.size(); ++k)
 	{
-		size_t J = jacobsthal(i);
-		current = J;
-		if (J >= pend.size())
-		{
-			boundaries.push_back(pend.size()); // end boundary
+		main.push_back(sortedPairs[k].large);
+		pend.push_back(sortedPairs[k].small);
+	}
+
+	//5. Jacobsthal insertion
+	size_t prev = 0;
+	for (int j = 1; ; ++j)
+	{
+		size_t bound = jacobsthal(j);
+		if (bound >= pend.size())
+			bound = pend.size();
+
+		for (size_t x = bound; x-- > prev;)
+			binaryInsert(main, pend[x]);
+
+		if (bound == pend.size())
 			break;
-		}
-		if (previous == current)
-			continue;
-		boundaries.push_back(J);
-		previous = J;
+
+		prev = bound;
 	}
-	// 6.2 Convert boundaries to ranges and binary-insert
-	previous = 0;
-	for (std::vector<int>::iterator b_it = boundaries.begin(); b_it != boundaries.end(); ++b_it) // declares how many pends are allowed to inserted in one loop
-	{
-		int boundary = *b_it;
-		for (int i = boundary; i > previous; --i) // reverse order
-		{
-			int value = pend[i - 1];
-			binaryInsert(main, value);
-		}
-		previous = boundary;
-	}
+
+	//6. Insert odd element
+	if (odd != -1)
+		binaryInsert(main, odd);
 
 	return main;
 }
